@@ -144,6 +144,15 @@ class Sms
     public function get()
     {
         try {
+
+            if (empty($this->templateId)) {
+                throw new Exception("templateId 短信模板不能为空");
+            }
+
+            if (empty($this->mobile)) {
+                throw new Exception("手机号不能位空");
+            }
+
             $cred = new Credential($this->secretId, $this->secretKey);
             $httpProfile = new HttpProfile();
             $httpProfile->setReqMethod($this->Method);
