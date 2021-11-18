@@ -22,7 +22,7 @@ class Sms
      * @param string $RedisIdent Redis前缀标识
      * @param string $RedisTimeout Redis过期时间 秒
      */
-    public $Method = "GET", $Timeout = 30, $Endpoint = "sms.tencentcloudapi.com", $RedisIdent = "ReaperSms", $RedisTimeout = 300;
+    protected $Method = "GET", $Timeout = 30, $Endpoint = "sms.tencentcloudapi.com", $RedisIdent = "ReaperSms", $RedisTimeout = 300;
 
     /**
      * 短信配置文件
@@ -37,7 +37,7 @@ class Sms
      * @param string $SignMethod 指定签名算法
      * @param string $Region 地域 默认 ap-guangzhou
      */
-    public $secretId, $secretKey, $AppId, $signName, $templateId, $param, $mobile, $Redis = [], $SignMethod, $Region;
+    protected $secretId, $secretKey, $AppId, $signName, $templateId, $param, $mobile, $Redis = [], $SignMethod, $Region;
 
 
     /**
