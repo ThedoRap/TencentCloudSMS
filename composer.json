@@ -25,7 +25,7 @@
   },
   "autoload": {
     "psr-4": {
-      "thedorap\\reaper\\tencentcloudsms\\": "src"
+      "thedorap\\tencentcloudsms\\": "src"
     }
   }
 }
