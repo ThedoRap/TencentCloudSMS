@@ -186,7 +186,7 @@ class Sms
         foreach ($this->mobile as $item) {
             if (!empty($this->Redis)) {
                 $redis = new Redis($this->Redis);
-                $redisName = $this->RedisIdent . "_" . $this->mobile;
+                $redisName = $this->RedisIdent . "_" . $item;
                 $isRedis = $redis::get($redisName);
                 if (!empty($isRedis)) {
                     $arrayIsRedis = json_decode($isRedis, 1);
