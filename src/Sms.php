@@ -174,7 +174,7 @@ class Sms
             $this->RedisRecord();
             return true;
         } catch (TencentCloudSDKException $e) {
-            return false;
+            throw new Exception($e);
         }
     }
 
