@@ -183,17 +183,21 @@ class Sms
      **/
     protected function RedisRecord()
     {
-        foreach ($this->mobile as $item) {
-            if (!empty($this->Redis)) {
-                $redis = new Redis($this->Redis);
-                $redisName = $this->RedisIdent . "_" . $item;
-                $isRedis = $redis::get($redisName);
-                if (!empty($isRedis)) {
-                    $arrayIsRedis = json_decode($isRedis, 1);
-                    $arrayIsRedis[$this->templateId] = $this->param;
-                    $redis::setnx($redisName, json_encode($arrayIsRedis, JSON_UNESCAPED_UNICODE), $this->RedisTimeout);
+        try {
+            foreach ($this->mobile as $item) {
+                if (!empty($this->Redis)) {
+                    $redis = new Redis($this->Redis);
+                    $redisName = $this->RedisIdent . "_" . $item;
+                    $isRedis = $redis::get($redisName);
+                    if (!empty($isRedis)) {
+                        $arrayIsRedis = json_decode($isRedis, 1);
+                        $arrayIsRedis[$this->templateId] = $this->param;
+                        $redis::setnx($redisName, json_encode($arrayIsRedis, JSON_UNESCAPED_UNICODE), $this->RedisTimeout);
+                    }
                 }
             }
+        } catch (Redis $e) {
+            throw new Exception($e);
         }
     }
 }
