@@ -21,7 +21,6 @@
   ],
   "require": {
     "php": ">=5.6.0",
-    "predis/predis": "*",
     "tencentcloud/tencentcloud-sdk-php": "^3.0"
   },
   "autoload": {
