@@ -144,7 +144,6 @@ class Sms
     public function get()
     {
         try {
-
             if (empty($this->templateId)) {
                 throw new Exception("templateId 短信模板不能为空");
             }
@@ -196,6 +195,22 @@ class Sms
                     }
                 }
             }
+        } catch (Redis $e) {
+            throw new Exception($e);
+        }
+    }
+
+    /**
+     * 查询
+     * @param $mobile 手机
+     * @return array
+     **/
+    public static function query($mobile)
+    {
+        try {
+            $SmsConfig = new Sms();
+            $redisName = $SmsConfig->RedisIdent . "_" . $mobile;
+            return json_decode(Redis::get($redisName), 1);
         } catch (Redis $e) {
             throw new Exception($e);
         }
