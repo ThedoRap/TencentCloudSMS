@@ -1,6 +1,6 @@
 <?php
 
-namespace ThedoRap;
+namespace ThedoRap\SMS;
 
 use mysql_xdevapi\Exception;
 use TencentCloud\Common\Credential;
