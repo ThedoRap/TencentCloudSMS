@@ -2,6 +2,7 @@
 
 namespace TencentCloudSMS;
 
+use Exception;
 use TencentCloud\Common\Credential;
 use TencentCloud\Common\Exception\TencentCloudSDKException;
 use TencentCloud\Common\Profile\ClientProfile;
@@ -51,7 +52,7 @@ class Sms
      */
     public static function config($secretId, $secretKey, $AppId, $signName = 0, $SignMethod = "TC3-HMAC-SHA256", $Region = "ap-guangzhou")
     {
-        if (empty($secretId) || empty($secretKey) || empty($AppId) || empty($signName)) {
+        if (empty($secretId) || empty($secretKey) || empty($AppId)) {
             throw new Exception("secretId||secretKey||AppId 为配置文件不能为空");
         }
         $SmsConfig = new Sms();
