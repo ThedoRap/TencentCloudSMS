@@ -19,8 +19,10 @@ class Sms
      * @param string $Endpoint 指定接入地域域名(默认就近接入)
      * @param string $SignMethod 指定签名算法
      * @param string $Region 地域 默认 ap-guangzhou
+     * @param string $RedisIdent Redis前缀标识
+     * @param string $RedisTimeout Redis过期时间 秒
      */
-    public $Method = "GET", $Timeout = 30, $Endpoint = "sms.tencentcloudapi.com";
+    public $Method = "GET", $Timeout = 30, $Endpoint = "sms.tencentcloudapi.com", $RedisIdent = "ReaperSms", $RedisTimeout = 300;
 
     /**
      * 短信配置文件
@@ -31,11 +33,11 @@ class Sms
      * @param int $templateId 模板号
      * @param array $param 短信参数 [参数1，参数2，...]
      * @param array $mobile 手机号 [18888888888,15555555555] 可批量
-     * @param int $Redis 验证短信 1启用 Redis 0 关闭
+     * @param array $Redis 验证短信 1启用 Redis 0 关闭
      * @param string $SignMethod 指定签名算法
      * @param string $Region 地域 默认 ap-guangzhou
      */
-    public $secretId, $secretKey, $AppId, $signName, $templateId, $param, $mobile, $Redis, $SignMethod, $Region;
+    public $secretId, $secretKey, $AppId, $signName, $templateId, $param, $mobile, $Redis = [], $SignMethod, $Region;
 
 
     /**
@@ -44,12 +46,11 @@ class Sms
      * @param string $secretKey secretKey
      * @param string $AppId Appid
      * @param string $signName 短信类型：0表示普通短信, 1表示营销短信
-     * @param string $Redis 验证短信 1启用 Redis 0 关闭
      * @param string $SignMethod 指定签名算法
      * @param string $Region 地域 ap-guangzhou
      * @return object
      */
-    public static function config($secretId, $secretKey, $AppId, $signName = 0, $Redis = 0, $SignMethod = "TC3-HMAC-SHA256", $Region = "ap-guangzhou")
+    public static function config($secretId, $secretKey, $AppId, $signName = 0, $SignMethod = "TC3-HMAC-SHA256", $Region = "ap-guangzhou")
     {
         if (empty($secretId) || empty($secretKey) || empty($AppId) || empty($signName)) {
             throw new Exception("secretId||secretKey||AppId 为配置文件不能为空");
@@ -61,34 +62,34 @@ class Sms
         $SmsConfig->signName = $signName;
         $SmsConfig->SignMethod = $SignMethod;
         $SmsConfig->Region = $Region;
-        $SmsConfig->Redis = $Redis;
-
         return $SmsConfig;
     }
 
-//    /**
-//     * Redis配置文件
-//     * @param string $host 服务器连接地址
-//     * @param int $port 端口号
-//     * @param string $password 连接密码
-//     * @param int $expire 默认全局过期时间，单位秒。
-//     * @param int $db 缓存库选择
-//     * @param int $timeout 连接超时时间/秒
-//     * @return object
-//     */
-//    public function RedisConfig($host = '127.0.0.1', $port = 6379, $password = "", $expire = 3600, $db = 0, $timeout = 10)
-//    {
-//        $config = [
-//            'host' => $host,
-//            'port' => $port,
-//            'expire' => $expire,
-//            'password' => $password,
-//            'db' => $db,
-//            'timeout' => $timeout
-//        ];
-//        $this->Redis = $config;
-//        return $this;
-//    }
+    /**
+     * Redis配置文件
+     * @param string $host 服务器连接地址
+     * @param int $port 端口号
+     * @param string $password 连接密码
+     * @param int $RedisTimeout Redis 过期时间
+     * @param int $expire 默认全局过期时间，单位秒。
+     * @param int $db 缓存库选择
+     * @param int $timeout 连接超时时间/秒
+     * @return object
+     */
+    public function RedisConfig($host = '127.0.0.1', $port = 6379, $password = "", $RedisTimeout = 300, $expire = 3600, $db = 0, $timeout = 10)
+    {
+        $config = [
+            'host' => $host,
+            'port' => $port,
+            'expire' => $expire,
+            'password' => $password,
+            'db' => $db,
+            'timeout' => $timeout
+        ];
+        $this->Redis = $config;
+        $this->RedisTimeout = $RedisTimeout;
+        return $this;
+    }
 
     /**
      * 短信发送模板和传参
@@ -142,9 +143,6 @@ class Sms
      **/
     public function get()
     {
-        if ($this->Redis){
-
-        }
         try {
             $cred = new Credential($this->secretId, $this->secretKey);
             $httpProfile = new HttpProfile();
@@ -164,10 +162,29 @@ class Sms
             $req->TemplateId = $this->templateId;
             $req->TemplateParamSet = $this->param;
             $client->SendSms($req);
+            $this->RedisRecord();
             return true;
-
         } catch (TencentCloudSDKException $e) {
             return false;
+        }
+    }
+
+    /**
+     * 循环存Redis
+     **/
+    protected function RedisRecord()
+    {
+        foreach ($this->mobile as $item) {
+            if (!empty($this->Redis)) {
+                $redis = new Redis($this->Redis);
+                $redisName = $this->RedisIdent . "_" . $this->mobile;
+                $isRedis = $redis::get($redisName);
+                if (!empty($isRedis)) {
+                    $arrayIsRedis = json_decode($isRedis, 1);
+                    $arrayIsRedis[$this->templateId] = $this->param;
+                    $redis::setnx($redisName, json_encode($arrayIsRedis, JSON_UNESCAPED_UNICODE), $this->RedisTimeout);
+                }
+            }
         }
     }
 }
