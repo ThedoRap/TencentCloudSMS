@@ -2,7 +2,6 @@
 
 namespace TencentCloudSMS;
 
-use mysql_xdevapi\Exception;
 use TencentCloud\Common\Credential;
 use TencentCloud\Common\Exception\TencentCloudSDKException;
 use TencentCloud\Common\Profile\ClientProfile;
