@@ -1,5 +1,5 @@
 <?php
-namespace Sms;
+namespace ThedoRap;
 use \Redis as RedisBase;
 
 class Redis
