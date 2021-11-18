@@ -1,5 +1,5 @@
 <?php
-namespace ThedoRap\SMS;
+namespace ThedoRap\TencentCloudSMS;
 use Redis as RedisBase;
 
 class Redis
